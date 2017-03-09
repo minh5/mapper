@@ -20,7 +20,7 @@ class Column(models.Model):
 
 class DataFile(models.Model):
     name = models.CharField(blank=True, null=True, max_length=255)
-    filepath = models.FileField(max_length=255, blank=True, null=True)
+    uploaded_file = models.FileField(upload_to='static/data/', blank=True, null=True)
 
     def as_dataframe(self):
         return pd.read_csv(self.filepath.__str__())

@@ -42,7 +42,10 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
-    'django_extensions'
+    'django_extensions',
+    'easy_thumbnails',
+    'filer',
+    'mptt',
 ]
 
 MIDDLEWARE = [
