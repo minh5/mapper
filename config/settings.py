@@ -182,4 +182,4 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]
 
-MEDIA_URL='/media/'
+MEDIA_URL='/media/data/'

@@ -3,8 +3,10 @@ import pandas as pd
 
 from django.db import models
 from django.apps import apps
+from django.core.urlresolvers import reverse
 
 from ..utils import COLUMNS_TO_AVOID
+
 
 class Column(models.Model):
     name = models.CharField(max_length=32, null=True, blank=True)
@@ -18,12 +20,19 @@ class Column(models.Model):
     def ___str__(self):
         return self.name
 
+
 class DataFile(models.Model):
     name = models.CharField(blank=True, null=True, max_length=255)
     uploaded_file = models.FileField(upload_to='static/data/', blank=True, null=True)
 
+    # def __init__(self):
+    #     self.create_all_columns()
+
+    # def get_absolute_url(self):
+    #     return reverse('data_file:data_file_create', args=[self.id])
+
     def as_dataframe(self):
-        return pd.read_csv(self.filepath.__str__())
+        return pd.read_csv(self.uploaded_file.path)
 
     @property
     def data_columns(self):
