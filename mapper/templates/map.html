@@ -1,11 +1,10 @@
 <html>
-
 <head>
     <meta charset='utf-8' />
-    <title></title>
+    <title>GL JS Choropleth</title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.32.1/mapbox-gl.js'></script>
-    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.32.1/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.mapbox.com/mapbox-gl-js/v0.33.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v0.33.1/mapbox-gl.css' rel='stylesheet' />
     <style>
         body {
             margin: 0;
@@ -18,19 +17,92 @@
             bottom: 0;
             width: 100%;
         }
+
+        #sidebar {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            bottom: 15px;
+            width: 250px;
+            overflow: auto;
+            background: rgba(255, 255, 255, 0.8);
+            font-family: "Arial";
+            padding-left: 10px;
+        }
     </style>
+
 </head>
 
 <body>
+
     <div id='map'></div>
+    <div id='sidebar'>
+        <h1>Mapper Tool for DataKind DC</h1>
+        <h2>{{ COLUMN_NAME }}</h2>
+        <div id="tooltip-name"></div>
+        <div id='tooltip'></div>
+    </div>
+
     <script>
+        //https://bl.ocks.org/hrecht/82b6440ed3b982a6f594
         mapboxgl.accessToken = '{{ MAPBOX_KEY }}';
 
+        //globals for the choropleth
+        var COLORS = {{ COLOR_BREAKS }},
+            BREAKS = {{ NUMBER_BREAKS }},
+            FILTERUSE;
+
+        //create a map using the Mapbox Light theme, zoomed in to DC
         var map = new mapboxgl.Map({
-            container: 'map', // container id
-            style: 'mapbox://styles/mapbox/streets-v9', //stylesheet location
-            center: [-77.012, 38.8906], // starting position
-            zoom: 13.5 // starting zoom
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v9',
+            zoom: 13.5,
+            center: [-77.012, 38.8906]
+        });
+
+        // Add zoom and rotation controls to the map.
+        map.addControl(new mapboxgl.Navigation());
+
+        //data source: http://opendata.dc.gov/datasets/e87a760828844422afe864a6754049c2_20?geometry=-77.297%2C38.854%2C-76.732%2C38.934
+        map.on('load', function () {
+            map.addSource('mapData', {
+                type: 'geojson',
+                data: 'mapper/static/geojson/mapData.geojson'
+            });
+
+            map.addLayer({
+                "id": "tracts",
+                "type": "fill",
+                "source": "mapData",
+                "paint": {
+                    "fill-color": {
+                        property: '{{ COLUMN_NAME }}',
+                        stops: [
+                          {{ BREAKS_LOGIC }}
+                  ]
+                    },
+                    "fill-opacity": 0.7,
+                    "fill-outline-color": "#ffffff"
+                }
+            });
+        });
+
+        map.on("mousemove", function (e) {
+            var features = map.queryRenderedFeatures(e.point, {
+                layers: ["{{ MATCH_KEY }}"]
+            });
+
+            if (features.length) {
+                //show name and value in sidebar
+                document.getElementById('tooltip-name').innerHTML = "Tract " + features[0].properties.GEOID;
+                document.getElementById('tooltip').innerHTML = Math.round(features[0].properties.{{ model.match_key }});
+                //for troubleshooting - show complete features info
+                //document.getElementById('tooltip').innerHTML = JSON.stringify(features, null, 2);
+            } else {
+                //if not hovering over a feature set tooltip to empty
+                document.getElementById('tooltip-name').innerHTML = "";
+                document.getElementById('tooltip').innerHTML = "";
+            }
         });
     </script>
 

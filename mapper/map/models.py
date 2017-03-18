@@ -21,14 +21,26 @@ class MapMaker(models.Model):
             raise Exception('not valid or supported geo level')
 
     def as_dataframe(self):
-        return gpd.read_file(self.geojson_file_name)
+        data = gpd.read_file(self.geojson_file_name)
+        data['GEOID'] = data['GEOID'].astype(int)
+        return data
 
-    def data_file_prepped(self):
-        columns = self.match_key + self.data_file.columns_to_create
+    def df_dataframe(self):
+        columns = [self.match_key] + self.data_file.columns_to_create
+        df = self.data_file.as_dataframe()
+        df[self.match_key] = df[self.match_key].astype(int)
         return self.data_file.as_dataframe().ix[:, columns]
 
-    def merge_data(self):
-        return self.as_dataframe().merge(self.data_file_prepped, on=self.match_key)
+    def merged_data(self):
+        return self.as_dataframe().merge(self.df_dataframe(), on=self.match_key)
 
-    def final_json(self):
-        return self.merge_data().to_json()
+    def to_json(self):
+        return self.merged_data().to_json()
+
+    def save_json(self):
+        with open('mapper/static/geojson/mapData.geojson', 'w') as f:
+            f.write(self.to_json())
+
+@receiver(post_save, sender=MapMaker)
+def create_columns(sender, instance, **kwargs):
+    instance.save_json()
