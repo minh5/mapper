@@ -2,9 +2,12 @@
 import geopandas as gpd
 
 from django.db import models
+from django.dispatch import receiver
+from django.db.models.signals import post_save
 
 from ..utils import (DC_GEOJSON_BLOCKS, DC_GEOJSON_TRACTS,
                      GEO_LEVEL_CHOICES, MATCH_KEY_CHOICES)
+
 
 class MapMaker(models.Model):
     geo_level = models.CharField(choices=GEO_LEVEL_CHOICES, max_length=24)
@@ -22,7 +25,7 @@ class MapMaker(models.Model):
 
     def as_dataframe(self):
         data = gpd.read_file(self.geojson_file_name)
-        data['GEOID'] = data['GEOID'].astype(int)
+        data['GEOID'] = data['GEOID'].astype(float)
         return data
 
     def df_dataframe(self):
@@ -32,7 +35,9 @@ class MapMaker(models.Model):
         return self.data_file.as_dataframe().ix[:, columns]
 
     def merged_data(self):
-        return self.as_dataframe().merge(self.df_dataframe(), on=self.match_key)
+        return self.as_dataframe().merge(self.df_dataframe(),
+                                         left_on='GEOID',
+                                         right_on=self.match_key)
 
     def to_json(self):
         return self.merged_data().to_json()
@@ -40,6 +45,7 @@ class MapMaker(models.Model):
     def save_json(self):
         with open('mapper/static/geojson/mapData.geojson', 'w') as f:
             f.write(self.to_json())
+
 
 @receiver(post_save, sender=MapMaker)
 def create_columns(sender, instance, **kwargs):

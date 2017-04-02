@@ -12,3 +12,6 @@ MATCH_KEY_CHOICES = [('geoid', 'GEO ID'),
                      ('blkgrp', 'CENSUS BLOCK GROUP')]
 
 COLUMNS_TO_AVOID = ['OBJECTID', 'TRACT', 'BLKGRP', 'GEOID']
+
+# df = DataFile.objects.first()
+# self = MapMaker(geo_level='tracts', match_key='GEOID', data_file=df)

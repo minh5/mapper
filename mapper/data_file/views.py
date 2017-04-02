@@ -8,7 +8,7 @@ from .models import Column, DataFile
 from .forms import DataForm, ColumnForm
 
 
-class DataView(CreateView):
+class DataCreateView(CreateView):
     model = DataFile
     template_name = 'data_file.html'
     fields = ['name', 'uploaded_file']
@@ -27,9 +27,9 @@ def model_form_upload(request):
     })
 
 
-class ColumnView(ListView):
+class DataDetailView(ListView):
     model = Column
-    template_name = 'column_list.html'
+    template_name = 'data_detail.html'
     fields = ['min_color', 'max_color', 'intervals']
 
 
@@ -38,4 +38,4 @@ def column_edit_form(request, id):
     form = ColumnForm(request.POST or None, instance=instance)
     if form.is_valid():
         form.save()
-    return direct_to_template(request, 'column_list.html', {'form': form})
+    return direct_to_template(request, 'data_detail.html', {'form': form})

@@ -23,7 +23,7 @@ class Column(models.Model):
     def get_color_ranges(self):
         min_col = Color(self.min_color)
         max_col = Color(self.max_color)
-        return (c.hex for c in list(min_col.range_to(max_col, self.intervals)))
+        return [c.hex for c in list(min_col.range_to(max_col, self.intervals))]
 
     def get_value_ranges(self):
         ranges = []
@@ -35,7 +35,7 @@ class Column(models.Model):
                 ranges.append((start_val, start_val*(self.intervals+1)))
             else:
                 ranges.append((start_val*num, start_val*(self.intervals+1)))
-        return tuple(ranges)
+        return [ranges]
 
     def ___rep__(self):
         return self.data_file.name + ": " + self.name

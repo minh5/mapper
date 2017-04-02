@@ -12,5 +12,6 @@ class MapView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(MapView, self).get_context_data(**kwargs)
         context['MAPBOX_KEY'] = os.environ.get('MAPBOX_KEY')
-        context['geojsonData'] = model.object.get(pk=1).to_json()
+        context['mapmaker'] = model
+        context['target_column']
         return context
